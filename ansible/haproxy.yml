@@ -1,0 +1,31 @@
+---
+- hosts: localhost
+
+  tasks:
+  - name: include vars
+    include_vars: haproxy.yaml
+
+  - name: install packages
+    yum: name={{item}} state=present
+    with_items: "{{installed_pkgs}}"
+    tags: pkgs
+
+  - name: install consul
+    unarchive: src={{consul_url}} dest={{consul_path}} remote_src=True
+    tags: consul
+
+  - name: install consul template
+    unarchive: src={{consul_template_url}} dest={{consul_template_path}} remote_src=True
+    tags: consul
+
+  - name: write haproxy consul template
+    template: src=haproxy.ctmpl.j2 dest={{haproxy_template_path}}
+    tags: consul
+  
+  - name: write consul service
+    copy: content={{item}} dest={{consul_service_path}}
+    with_items: "{{haproxy_consul_service|to_json}}"
+    tags: consul
+
+  - name: write start script
+    template: src=haproxy.sh.j2 dest={{start_script_path}} mode=700

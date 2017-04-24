@@ -1,0 +1,23 @@
+---
+- hosts: localhost
+
+  tasks:
+  - name: include vars
+    include_vars: consul.yaml
+
+  - name: install packages
+    yum: name={{item}} state=present
+    with_items: "{{installed_pkgs}}"
+    tags: pkgs
+
+  - name: install consul
+    unarchive: src={{consul_url}} dest={{consul_path}} remote_src=True
+    tags: consul
+
+  - name: write consul config
+    copy: content={{item}} dest={{consul_config_path}}
+    with_items: "{{consul_config|to_json}}"
+    tags: consul
+
+  - name: write start script
+    template: src=consul.sh.j2 dest={{start_script_path}} mode=700

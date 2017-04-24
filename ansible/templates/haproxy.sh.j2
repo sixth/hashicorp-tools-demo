@@ -1,0 +1,15 @@
+#!/bin/bash
+set -e
+export CONTAINER_IP=`sed -n 's/^\([0-9\.]*\)[[:blank:]]*[0-9a-f]\{12,\}$/\1/p' /etc/hosts | awk '{print $1}'`
+
+if [ -f "/service.json" ]; then
+sed -ri "s/dummyip/${CONTAINER_IP}/g" /service.json
+fi
+if [ ! -z "$CONSUL_IP" ]; then
+    export CONSUL_IP=${CONSUL_IP-'172.17.0.2'}
+    consul agent -disable-host-node-id -data-dir=/tmp/consul -datacenter=docker -join=$CONSUL_IP "$@" &
+fi
+
+consul-template -template="/haproxy.ctmpl:/etc/haproxy/haproxy.cfg:/start.sh" -consul=$CONSUL_IP:8500 &
+sleep 10s && for i in {1..5}; do /usr/bin/curl -X PUT -d @/service.json 127.0.0.1:8500/v1/agent/service/register; done
+/bin/bash -c 'haproxy -f /etc/haproxy/haproxy.cfg -p /var/run/haproxy.pid -D -sf $(cat /var/run/haproxy.pid)'; wait

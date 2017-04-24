@@ -1,0 +1,37 @@
+{
+  "_comment": "Usage example command: packer build -var 'app=APP NAME (e.g. haproxy, ngninx, consul)' packer.json",
+  "variables": {
+    "app": ""
+  },
+
+  "builders": [
+      {
+      "type": "docker",
+      "image": "centos:7",
+      "name": "{{user `app`}}",
+      "commit": true,
+      "changes": [ "ENV APP {{user `app`}}", "CMD [\"/start.sh\"]" ]
+      }
+
+  ],
+  "provisioners": [
+      {
+        "type": "shell",
+        "inline": [ "yum install -y epel-release && yum install -y ansible" ]
+      },
+      {
+        "type": "ansible-local",
+        "playbook_file": "ansible/{{user `app`}}.yml",
+        "playbook_dir": "ansible"
+      }
+
+  ],
+  "post-processors": [
+    {
+      "type": "docker-tag",
+      "repository": "sixth-{{user `app`}}",
+      "tag": "latest"
+      }
+      
+    ]
+}

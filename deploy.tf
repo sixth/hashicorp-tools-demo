@@ -3,7 +3,7 @@ provider "docker" {
   host = "unix:///var/run/docker.sock"
 }
 
-## Configure consul master resource
+## Configure consul resource
 resource "docker_container" "consul-master" {
   name    = "consul-1"
   image   = "sixth-consul:latest"
@@ -62,11 +62,12 @@ resource "docker_container" "nginx" {
 }
 
 ## Configure haproxy resource
-resource "docker_container" "haproxy1" {
-  name = "haproxy-1"
+resource "docker_container" "haproxy" {
+  name = "haproxy-${count.index+1}"
   image = "sixth-haproxy:latest"
+  count = "1"
   env = ["CONSUL_IP=${docker_container.consul-master.ip_address}"]
-  command = [ "/start.sh", "-node=haproxy-1" ]
+  command = [ "/start.sh", "-node=haproxy-${count.index+1}" ]
   ports {
     internal = 8001
     external = 8001
@@ -75,12 +76,4 @@ resource "docker_container" "haproxy1" {
     internal = 80
     external = 80
 }
-}
-
-resource "docker_container" "haproxy" {
-  name = "haproxy-${count.index+2}"
-  image = "sixth-haproxy:latest"
-  count = "2"
-  env = ["CONSUL_IP=${docker_container.consul-master.ip_address}"]
-  command = [ "/start.sh", "-node=haproxy-${count.index+2}" ]
 }

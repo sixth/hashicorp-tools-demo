@@ -23,3 +23,5 @@ nginx_consul_service:
   Name: nginx
   Address: dummyip
   Port: 8181
+  interval: 10s
+  timeout: 1s

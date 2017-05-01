@@ -6,7 +6,7 @@
     include_vars: consul.yaml
 
   - name: install packages
-    yum: name={{item}} state=present
+    apk: name={{item}} state=present
     with_items: "{{installed_pkgs}}"
     tags: pkgs
 

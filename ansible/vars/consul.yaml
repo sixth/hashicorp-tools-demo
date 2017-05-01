@@ -2,6 +2,8 @@
 ## Global config
 installed_pkgs:
   - unzip
+  - ca-certificates
+  - bash
 start_script_path: "/start.sh"
 
 ## Consul installation settings

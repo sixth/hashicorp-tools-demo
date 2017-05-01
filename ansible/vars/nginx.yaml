@@ -3,25 +3,37 @@
 installed_pkgs: 
   - nginx
   - unzip
+  - ca-certificates
+  - bash
+  - curl
 start_script_path: "/start.sh"
+consul_dir_path: "/tmp/consul"
+nginx_vhost_path: "/etc/nginx/conf.d/default.conf"
 
 ## Consul installation settings
 consul_version: 0.8.1
 consul_url: https://releases.hashicorp.com/consul/{{consul_version}}/consul_{{consul_version}}_linux_amd64.zip
 consul_path: "/usr/bin"
-consul_config_path: "/tmp/consul.json"
 
 ## Consul template installation settings
 consul_template_version: 0.18.2
 consul_template_url: https://releases.hashicorp.com/consul-template/{{consul_template_version}}/consul-template_{{consul_template_version}}_linux_amd64.zip
 consul_template_path: "/usr/bin"
-nginx_template_path: "/nginx.ctmpl"
+nginx_template_path: "{{consul_dir_path}}/nginx.ctmpl"
 
-## Consul service check
-consul_service_path: "/service.json"
+## Consul service
+consul_service_path: "{{consul_dir_path}}/service.json"
 nginx_consul_service:
-  Name: nginx
-  Address: dummyip
-  Port: 8181
-  interval: 10s
-  timeout: 1s
+  service:
+    Name: nginx
+    Address: dummyip
+    Port: 8181
+
+## Consul check
+consul_check_path: "{{consul_dir_path}}/check.json"
+nginx_consul_check:
+  check:
+    Name: nginx
+    http: http://dummyip:8181
+    interval: 10s
+    timeout: 1s

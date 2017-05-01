@@ -6,7 +6,7 @@
     include_vars: nginx.yaml
 
   - name: install packages
-    yum: name={{item}} state=present
+    apk: name={{item}} state=present
     with_items: "{{installed_pkgs}}"
     tags: pkgs
 
@@ -17,14 +17,27 @@
   - name: install consul template
     unarchive: src={{consul_template_url}} dest={{consul_template_path}} remote_src=True
     tags: consul
+  
+  - name: create consul folder
+    file: path={{consul_dir_path}} state=directory
+    tags: consul
 
-  - name: write nginx template
+  - name: write nginx consul template
     template: src=nginx.ctmpl.j2 dest={{nginx_template_path}}
+    tags: consul
+
+  - name: write nginx vhost
+    template: src=nginx.conf.j2 dest={{nginx_vhost_path}}
     tags: consul
 
   - name: write consul service
     copy: content={{item}} dest={{consul_service_path}}
     with_items: "{{nginx_consul_service|to_json}}"
+    tags: consul
+
+  - name: write consul check
+    copy: content={{item}} dest={{consul_check_path}}
+    with_items: "{{nginx_consul_check|to_json}}"
     tags: consul
 
   - name: write start script

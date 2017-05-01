@@ -16,9 +16,9 @@ listen stats
 frontend www
     bind *:80
     mode http
-    default_backend app
+    default_backend nginx
 
-backend app
+backend nginx
   mode http
   balance roundrobin
   {{range service "nginx"}}

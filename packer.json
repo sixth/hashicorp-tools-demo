@@ -7,17 +7,19 @@
   "builders": [
       {
       "type": "docker",
-      "image": "centos:7",
+      "image": "alpine:3.5",
       "name": "{{user `app`}}",
+      "run_command": [ "-d", "-i", "-t", "{{.Image}}", "/bin/sh" ],
       "commit": true,
       "changes": [ "ENV APP {{user `app`}}", "CMD [\"/start.sh\"]" ]
+     
       }
 
   ],
   "provisioners": [
       {
         "type": "shell",
-        "inline": [ "yum install -y epel-release && yum install -y ansible" ]
+        "inline": [ "apk add ansible --update-cache" ]
       },
       {
         "type": "ansible-local",
